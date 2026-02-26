@@ -32,7 +32,6 @@ func checkConformance(t *testing.T, p pprofile.Profiles) {
 	// pdata's KeyValueAndUnit.MarshalProto always writes the Value field
 	// even for the zero-value entry at index 0, producing a non-nil but empty
 	// *AnyValue. Clear it here so profcheck's zero-value check passes.
-	// See https://github.com/open-telemetry/opentelemetry-collector/issues/XXXXX
 	if dict := data.Dictionary; dict != nil {
 		for _, attr := range dict.AttributeTable {
 			if attr.KeyStrindex == 0 && attr.UnitStrindex == 0 && attr.Value != nil && attr.Value.Value == nil {
