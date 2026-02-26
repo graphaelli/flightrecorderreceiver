@@ -8,8 +8,46 @@ import (
 	"testing"
 	"time"
 
+	"github.com/open-telemetry/sig-profiling/tools/profcheck"
+	"go.opentelemetry.io/collector/pdata/pprofile"
+	profiles "go.opentelemetry.io/proto/otlp/profiles/v1development"
 	"go.uber.org/zap"
+	"google.golang.org/protobuf/proto"
 )
+
+func checkConformance(t *testing.T, p pprofile.Profiles) {
+	t.Helper()
+
+	marshaler := &pprofile.ProtoMarshaler{}
+	buf, err := marshaler.MarshalProfiles(p)
+	if err != nil {
+		t.Fatalf("failed to marshal profiles: %v", err)
+	}
+
+	var data profiles.ProfilesData
+	if err := proto.Unmarshal(buf, &data); err != nil {
+		t.Fatalf("failed to unmarshal ProfilesData: %v", err)
+	}
+
+	// pdata's KeyValueAndUnit.MarshalProto always writes the Value field
+	// even for the zero-value entry at index 0, producing a non-nil but empty
+	// *AnyValue. Clear it here so profcheck's zero-value check passes.
+	if dict := data.Dictionary; dict != nil {
+		for _, attr := range dict.AttributeTable {
+			if attr.KeyStrindex == 0 && attr.UnitStrindex == 0 && attr.Value != nil && attr.Value.Value == nil {
+				attr.Value = nil
+			}
+		}
+	}
+
+	checker := profcheck.ConformanceChecker{
+		CheckDictionaryDuplicates: true,
+		CheckSampleTimestampShape: true,
+	}
+	if err := checker.Check(&data); err != nil {
+		t.Errorf("profcheck conformance check failed:\n%v", err)
+	}
+}
 
 func primeFactors(t *testing.T, n int) []int {
 	t.Helper()
@@ -128,6 +166,8 @@ func TestConvert(t *testing.T) {
 			}
 		}
 	}
+	checkConformance(t, p)
+
 	t.Logf("")
 	// Log the converted metrics for visual inspection
 	for _, rp := range m.ResourceMetrics().All() {

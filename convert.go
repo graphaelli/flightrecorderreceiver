@@ -58,6 +58,7 @@ func convert(ctx context.Context, logger *zap.Logger, f io.Reader) (pprofile.Pro
 	var currentScopeProfile pprofile.ScopeProfiles
 	var currentProfile pprofile.Profile
 	addedFrames := false
+	inRange := false
 
 eventLoop:
 	for {
@@ -125,7 +126,10 @@ eventLoop:
 			currentScopeProfile.SetSchemaUrl(semconv.SchemaURL)
 
 			initializeProfile(lt, currentProfile)
+			inRange = true
 		case trace.EventRangeEnd:
+			inRange = false
+
 			if !addedFrames {
 				// Do not generated data with empty profiles
 				continue eventLoop
@@ -140,10 +144,15 @@ eventLoop:
 			endTS := eventWallTime(ev.Time(), clockSnap)
 			duration := endTS.Sub(startTS).Nanoseconds()
 			currentProfile.SetDurationNano(uint64(duration))
+			continue eventLoop
 		case trace.EventStateTransition:
 			// Just unwind the stack
 		default:
 			logger.Debug(fmt.Sprintf("Skipping event kind %s", ev.Kind().String()))
+			continue eventLoop
+		}
+
+		if !inRange {
 			continue eventLoop
 		}
 
@@ -257,6 +266,9 @@ func populateDictionary(lt lookupTable, dic pprofile.ProfilesDictionary) error {
 		dic.AttributeTable().AppendEmpty()
 	}
 	for a, idx := range lt.attributes {
+		if idx == 0 {
+			continue
+		}
 		dic.AttributeTable().At(int(idx)).SetKeyStrindex(a.keyIdx)
 		dic.AttributeTable().At(int(idx)).SetUnitStrindex(a.unitIdx)
 		dic.AttributeTable().At(int(idx)).Value().SetStr(a.value)

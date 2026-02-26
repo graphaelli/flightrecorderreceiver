@@ -1,4 +1,4 @@
-.PHONY: build clean fmt lint test
+.PHONY: build clean fmt lint profcheck test
 
 GO_TOOLS := -modfile=tools.mod
 
@@ -13,6 +13,9 @@ fmt:
 
 lint:
 	go tool $(GO_TOOLS) staticcheck -checks=all -show-ignored -tests  ./...
+
+profcheck:
+	go test -v -run TestConvert ./...
 
 test:
 	go test ./...
