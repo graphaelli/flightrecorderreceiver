@@ -4,6 +4,7 @@ go 1.25
 
 require (
 	github.com/bmatcuk/doublestar/v4 v4.9.2
+	github.com/open-telemetry/sig-profiling/tools/profcheck v0.0.0-20260225111431-5379e9cddd3b
 	github.com/zeebo/xxh3 v1.0.2
 	go.opentelemetry.io/collector/component v1.51.0
 	go.opentelemetry.io/collector/consumer v1.51.0
@@ -14,8 +15,10 @@ require (
 	go.opentelemetry.io/collector/receiver/xreceiver v0.145.0
 	go.opentelemetry.io/collector/scraper/scraperhelper v0.145.0
 	go.opentelemetry.io/otel v1.40.0
+	go.opentelemetry.io/proto/otlp/profiles/v1development v0.2.0
 	go.uber.org/zap v1.27.1
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96
+	google.golang.org/protobuf v1.36.11
 )
 
 require (
@@ -34,9 +37,9 @@ require (
 	go.opentelemetry.io/collector/scraper v0.145.0 // indirect
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
+	go.opentelemetry.io/proto/otlp v1.9.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/sys v0.39.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251222181119-0a764e51fe1b // indirect
 	google.golang.org/grpc v1.78.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
 )
